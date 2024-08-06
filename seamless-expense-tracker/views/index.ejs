@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seamless Expense Tracker</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Seamless Expense Tracker</h1>
+        
+        <form id="expense-form" action="/add-expense" method="POST">
+            <input type="text" name="description" placeholder="Description" required>
+            <input type="number" name="amount" placeholder="Amount" step="0.01" required>
+            <input type="date" name="date" required>
+            <button type="submit">Add Expense</button>
+        </form>
+
+        <div id="expense-list">
+            <h2>Expenses</h2>
+            <ul>
+                <% expenses.forEach(expense => { %>
+                    <li>
+                        <span class="description"><%= expense.description %></span>
+                        <span class="amount">$<%= expense.amount.toFixed(2) %></span>
+                        <span class="date"><%= expense.date %></span>
+                    </li>
+                <% }); %>
+            </ul>
+        </div>
+
+        <div id="summary">
+            <h2>Summary</h2>
+            <p>Total Expenses: $<span id="total-amount">0.00</span></p>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>
