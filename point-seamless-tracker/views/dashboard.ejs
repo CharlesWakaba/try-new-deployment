@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Point Seamless Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .dashboard {
+            display: flex;
+            width: 100%;
+        }
+        .sidebar {
+            background-color: #6c5ce7;
+            width: 240px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sidebar .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .nav-links {
+            list-style: none;
+            padding: 0;
+        }
+        .nav-links li {
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .nav-links a .icon {
+            margin-right: 10px;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #6c5ce7;
+        }
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        .chart-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .expense-item {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .expense-item .amount {
+            font-weight: 600;
+            color: #e17055;
+        }
+        .expense-item .category {
+            color: #636e72;
+            font-size: 0.9rem;
+        }
+        .expense-item div {
+            flex: 1;
+        }
+        .progress-bar {
+            background-color: #dfe6e9;
+            border-radius: 8px;
+            height: 25px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .progress-bar div {
+            height: 100%;
+            background-color: #6c5ce7;
+            width: 0;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: auto;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo">Point Seamless</div>
+            <ul class="nav-links">
+                <li><a onclick="showTab('dashboard')"><span class="icon">📊</span> Dashboard</a></li>
+                <li><a onclick="showTab('expenses')"><span class="icon">💰</span> Expenses</a></li>
+                <li><a onclick="showTab('reports')"><span class="icon">📈</span> Reports</a></li>
+            </ul>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </aside>
+        <main class="main-content">
+            <header class="header">
+                <h1 id="tab-title">Dashboard</h1>
+                <div class="user-info">
+                    <img src="https://via.placeholder.com/40" alt="User Avatar" class="user-avatar">
+                    <span id="user-name">Loading...</span>
+                </div>
+            </header>
+            <div id="dashboard-tab" class="tab-content active">
+                <div class="grid-container">
+                    <div class="card">
+                        <h3>Total Expenses</h3>
+                        <div id="total-expenses" class="summary-value">$0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Savings Goal Progress</h3>
+                        <div class="progress-bar">
+                            <div id="savings-progress"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Top Spending Category</h3>
+                        <div id="top-category" class="summary-value">N/A</div>
+                    </div>
+                </div>
+                <form id="add-expense-form">
+                    <h2>Add Expense</h2>
+                    <input type="text" name="description" placeholder="Description" required>
+                    <input type="number" name="amount" placeholder="Amount" required>
+                    <select name="category" required>
+                        <option value="Food">Food</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <button type="submit">Add Expense</button>
+                </form>
+                <form id="savings-goal-form">
+                    <h2>Set Savings Goal</h2>
+                    <input type="number" id="savings-goal-input" placeholder="Savings Goal" required>
+                    <button type="submit">Set Goal</button>
+                </form>
+            </div>
+            <div id="expenses-tab" class="tab-content">
+                <h2>Expense List</h2>
+                <div id="expense-list" class="expense-list"></div>
+            </div>
+            <div id="reports-tab" class="tab-content">
+                <h2>Spending Reports</h2>
+                <div class="grid-container">
+                    <div class="chart-container">
+                        <canvas id="expenses-trend-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="expenses-category-chart"></canvas>
+                    </div>
+                </div>
+                <div class="grid-container">
+                    <div class="card">
+                        <h3>Highest Expense</h3>
+                        <div id="highest-expense" class="summary-value">$0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Average Expense</h3>
+                        <div id="average-expense" class="summary-value">$0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Total Expenses</h3>
+                        <div id="total-report-expenses" class="summary-value">$0</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        const userName = 'John Doe'
+        document.getElementById('user-name').innerText = userName
+        let expenses = []
+        let totalExpenses = 0
+        let savingsGoal = 0
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'))
+            document.getElementById(`${tab}-tab`).classList.add('active')
+            document.getElementById('tab-title').innerText = tab.charAt(0).toUpperCase() + tab.slice(1)
+            if (tab === 'expenses') updateExpenseList()
+            if (tab === 'reports') generateReports()
+        }
+        document.getElementById('add-expense-form').addEventListener('submit', function(event) {
+            event.preventDefault()
+            const formData = new FormData(event.target)
+            const amount = parseFloat(formData.get('amount'))
+            const description = formData.get('description')
+            const category = formData.get('category')
+            expenses.push({ amount, description, category, date: new Date() })
+            totalExpenses += amount
+            document.getElementById('total-expenses').innerText = `$${totalExpenses.toFixed(2)}`
+            updateTopCategory()
+            updateSavingsProgress()
+            event.target.reset()
+        })
+        document.getElementById('savings-goal-form').addEventListener('submit', function(event) {
+            event.preventDefault()
+            savingsGoal = parseFloat(document.getElementById('savings-goal-input').value)
+            updateSavingsProgress()
+        })
+        function updateTopCategory() {
+            const categories = expenses.reduce((acc, curr) => {
+                acc[curr.category] = (acc[curr.category] || 0) + curr.amount
+                return acc
+            }, {})
+            let topCategory = 'N/A'
+            let maxAmount = 0
+            for (const [category, amount] of Object.entries(categories)) {
+                if (amount > maxAmount) {
+                    topCategory = category
+                    maxAmount = amount
+                }
+            }
+            document.getElementById('top-category').innerText = topCategory
+        }
+        function updateSavingsProgress() {
+            const progress = Math.min((totalExpenses / savingsGoal) * 100, 100)
+            document.getElementById('savings-progress').style.width = `${progress}%`
+        }
+        function updateExpenseList() {
+            const expenseListContainer = document.getElementById('expense-list')
+            expenseListContainer.innerHTML = expenses.map(expense => `
+                <div class="expense-item">
+                    <div>${expense.description}</div>
+                    <div class="amount">$${expense.amount.toFixed(2)}</div>
+                    <div class="category">${expense.category}</div>
+                </div>
+            `).join('')
+        }
+        function generateReports() {
+            const categories = ['Food', 'Transport', 'Entertainment', 'Other']
+            const categoryData = categories.map(category => {
+                return expenses.filter(expense => expense.category === category).reduce((acc, curr) => acc + curr.amount, 0)
+            })
+            const ctxCategory = document.getElementById('expenses-category-chart').getContext('2d')
+            new Chart(ctxCategory, {
+                type: 'doughnut',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: 'Expenses by Category',
+                        data: categoryData,
+                        backgroundColor: ['#6c5ce7', '#a29bfe', '#00b894', '#fdcb6e'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Expenses by Category'
+                        }
+                    }
+                }
+            })
+            const dates = expenses.map(expense => expense.date.toLocaleDateString())
+            const amounts = expenses.map(expense => expense.amount)
+            const ctxTrend = document.getElementById('expenses-trend-chart').getContext('2d')
+            new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Spending Trend',
+                        data: amounts,
+                        fill: false,
+                        borderColor: '#6c5ce7',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Spending Trend'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Amount ($)'
+                            }
+                        }
+                    }
+                }
+            })
+            const highestExpense = Math.max(...expenses.map(exp => exp.amount))
+            const averageExpense = (totalExpenses / expenses.length).toFixed(2)
+            document.getElementById('highest-expense').innerText = `$${highestExpense.toFixed(2)}`
+            document.getElementById('average-expense').innerText = `$${averageExpense}`
+            document.getElementById('total-report-expenses').innerText = `$${totalExpenses.toFixed(2)}`
+        }
+        function logout() {
+            localStorage.clear()
+            sessionStorage.clear()
+            window.location.href = "/login.html"
+        }
+    </script>
+</body>
+</html>
